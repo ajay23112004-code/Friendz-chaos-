@@ -1,0 +1,286 @@
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#090611">
+<title>FriendZ Chaos — Truth or Dare</title>
+<style>
+:root{--bg:#090611;--panel:#151020;--panel2:#1d1530;--purple:#a855f7;--pink:#ec4899;--text:#f7f1ff;--muted:#b9accb;--line:#39264f;--green:#6ee7b7}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at top,#281344 0%,#10091b 40%,var(--bg) 75%);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.wrap{width:min(760px,100%);margin:auto;padding:22px 16px 48px}.brand{text-align:center;margin:12px 0 24px}.logo{display:inline-grid;place-items:center;width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,var(--purple),var(--pink));font-size:30px;box-shadow:0 0 35px #a855f755}.brand h1{font-size:clamp(27px,6vw,42px);margin:12px 0 4px;letter-spacing:-1px}.brand h1 span{color:#d8a5ff}.brand p{color:var(--muted);margin:0}.card{background:linear-gradient(145deg,#191125ee,#100b19f5);border:1px solid var(--line);border-radius:22px;padding:20px;margin:14px 0;box-shadow:0 12px 40px #0004}.card h2{font-size:19px;margin:0 0 12px}.hint{color:var(--muted);font-size:13px;line-height:1.5}.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:130px}input{width:100%;padding:14px 13px;border-radius:12px;border:1px solid #49315f;background:#0c0813;color:var(--text);font:inherit;outline:none;margin:5px 0 10px}input:focus{border-color:var(--purple);box-shadow:0 0 0 3px #a855f722}button{border:0;border-radius:12px;padding:13px 15px;font:700 14px inherit; font-family:inherit;font-weight:750;color:white;background:linear-gradient(120deg,#9333ea,#c026d3);cursor:pointer;transition:transform .15s,filter .15s}button:hover{filter:brightness(1.12)}button:active{transform:scale(.98)}button:disabled{opacity:.4;cursor:not-allowed}.secondary{background:#251934;border:1px solid #50366a}.danger{background:#3b172d;border:1px solid #7f244f}.full{width:100%}.status{font-size:13px;color:var(--muted);min-height:20px;margin-top:10px}.status.error{color:#fda4af}.status.ok{color:var(--green)}.hidden{display:none!important}.pill{display:inline-flex;align-items:center;gap:7px;background:#28163a;border:1px solid #573574;border-radius:999px;padding:7px 11px;font-size:12px;color:#e9d5ff}.players{display:grid;gap:8px;margin:12px 0}.player{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#100b19;border:1px solid #342342;padding:11px 13px;border-radius:12px}.player small{color:var(--muted)}.host{color:#f0abfc;font-size:11px}.turn{border:1px solid #7140a0;background:linear-gradient(135deg,#25123d,#171022);border-radius:18px;padding:20px;text-align:center;margin:15px 0}.turn .eyebrow{color:#d8b4fe;font-size:12px;text-transform:uppercase;letter-spacing:2px}.turn h2{font-size:24px;margin:8px 0}.challenge{font-size:18px;line-height:1.5;margin:16px 0}.choicegrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}.choice{padding:22px 12px;min-height:110px;font-size:22px;border:1px solid #8b5cf6;background:linear-gradient(145deg,#321653,#1c1030);box-shadow:0 0 25px #a855f722}.choice.dare{border-color:#ec4899;background:linear-gradient(145deg,#45132f,#241024)}.tiny{font-size:12px;color:var(--muted)}.roomcode{font-size:28px;letter-spacing:5px;font-weight:900;color:#e9d5ff}.topline{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.foot{text-align:center;color:#88799b;font-size:12px;margin-top:24px}.toast{position:sticky;top:8px;z-index:3;text-align:center;background:#2d1743;border:1px solid #7040a0;padding:10px;border-radius:12px;margin-bottom:10px}
+@media(max-width:420px){.card{padding:16px}.choice{font-size:19px}.roomcode{font-size:24px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="brand">
+    <div class="logo">🎭</div>
+    <h1>FriendZ <span>Chaos</span></h1>
+    <p>Truth. Dare. Chaos. Besties only-ish. 💜</p>
+  </header>
+  <div id="toast" class="toast hidden"></div>
+
+  <section id="setup" class="card">
+    <h2>✨ First, pick your player name</h2>
+    <input id="nameInput" maxlength="18" placeholder="Your nickname (e.g. Ajay)" autocomplete="nickname">
+    <div class="row">
+      <button id="createBtn" class="full">＋ Create a room</button>
+      <button id="showJoinBtn" class="secondary full">Join with code</button>
+    </div>
+    <div id="joinArea" class="hidden" style="margin-top:14px">
+      <label for="codeInput" class="hint">Room code from your friend</label>
+      <input id="codeInput" maxlength="6" placeholder="ABC123" autocapitalize="characters">
+      <button id="joinBtn" class="full">Join the chaos 💜</button>
+    </div>
+    <p class="hint">Everyone can play from their own phone. Room codes are shared by you, not publicly listed.</p>
+    <div id="setupStatus" class="status"></div>
+  </section>
+
+  <section id="game" class="hidden">
+    <div class="card">
+      <div class="topline">
+        <div><span class="pill">● LIVE ROOM</span><div class="roomcode" id="roomCodeText">------</div><div class="hint">Share this code with your friends.</div></div>
+        <button id="copyBtn" class="secondary">Copy invite</button>
+      </div>
+      <div id="roomStatus" class="status"></div>
+    </div>
+    <div class="card">
+      <div class="topline"><h2>👯 Players in the room</h2><span class="pill" id="playerCount">0 players</span></div>
+      <div id="playersList" class="players"></div>
+      <p class="hint">The current turn is shared live with everyone in this room.</p>
+    </div>
+    <div class="card">
+      <div class="turn">
+        <div class="eyebrow">It's time for chaos</div>
+        <h2 id="turnTitle">Waiting for players…</h2>
+        <div id="turnSub" class="hint">Invite at least one friend to get started.</div>
+      </div>
+      <div id="challengeBox" class="hidden">
+        <span class="pill" id="challengeType">TRUTH</span>
+        <div id="challengeText" class="challenge"></div>
+        <div class="row">
+          <button id="doneBtn" class="full">✅ Done!</button>
+          <button id="skipBtn" class="secondary full">🔀 Another one</button>
+        </div>
+      </div>
+      <div id="chooseBox">
+        <p class="hint" id="chooseHint">When it's your turn, choose one. Keep it fun and let anyone skip a challenge.</p>
+        <div class="choicegrid">
+          <button id="truthBtn" class="choice">😇 TRUTH</button>
+          <button id="dareBtn" class="choice dare">😈 DARE</button>
+        </div>
+      </div>
+      <button id="nextBtn" class="full hidden">➡️ Next player's turn</button>
+      <div id="gameStatus" class="status"></div>
+    </div>
+    <button id="leaveBtn" class="danger full">Leave room</button>
+  </section>
+  <footer class="foot">Made for friend-group fun 💜 Be kind, don't pressure anyone, and skip anything uncomfortable.</footer>
+</div>
+
+<!-- Firebase compat SDK: works in a single HTML file without a build step. -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+/*
+  1) Replace the placeholder values below with your Firebase web app config.
+  2) Enable Authentication > Sign-in method > Anonymous.
+  3) Create a Realtime Database and paste the rules from README.md.
+*/
+const firebaseConfig = {
+  apiKey: "PASTE_YOUR_FIREBASE_API_KEY",
+  authDomain: "PASTE_YOUR_PROJECT_ID.firebaseapp.com",
+  databaseURL: "PASTE_YOUR_DATABASE_URL",
+  projectId: "PASTE_YOUR_PROJECT_ID",
+  appId: "PASTE_YOUR_APP_ID"
+};
+
+const TRUTHS = [
+  "What is the most embarrassing thing you've done in front of a crush?",
+  "Who in this group would survive the longest in a zombie apocalypse?",
+  "What is your funniest childhood memory?",
+  "What's one silly lie you told and got caught in?",
+  "Who here makes you laugh even when you're annoyed?",
+  "What is the weirdest thing in your search history that you're comfortable sharing?",
+  "If you had to swap lives with one friend for a day, who would it be?",
+  "What's your most useless talent?",
+  "What was your first impression of the person to your left in the player list?",
+  "What's a song you secretly love but pretend not to?",
+  "What is your biggest harmless pet peeve?",
+  "Which friend would you trust to plan a surprise party for you?",
+  "What's the funniest nickname someone has given you?",
+  "If this group were a TV show, what would its title be?",
+  "What tiny thing instantly improves your mood?",
+  "Who in this group is most likely to become famous for something ridiculous?",
+  "What's the most awkward message you've sent to the wrong person?",
+  "Describe your current mood using only a movie title.",
+  "What is one thing your friends tease you about?",
+  "If you could instantly master one skill, what would it be?",
+  "What's the silliest reason you've ever been jealous?",
+  "Who in this group would be the worst secret agent, and why?",
+  "What's your funniest autocorrect fail?",
+  "Give yourself a ridiculous superhero name."
+];
+const DARES = [
+  "Speak like a news reporter until your next turn.",
+  "Send the group your best dramatic villain laugh (voice note optional).",
+  "Describe your favourite snack like it's a five-star restaurant meal.",
+  "Do your best robot dance for 10 seconds.",
+  "Type your next message like a medieval king or queen.",
+  "Make up a two-line song about the person whose turn comes next.",
+  "Use three emojis to describe everyone in the room.",
+  "Do your most dramatic movie dialogue delivery.",
+  "Invent a new handshake and explain it to the group.",
+  "Talk like a sports commentator for the next 30 seconds.",
+  "Give yourself a funny award and acceptance speech.",
+  "Say the alphabet backwards as far as you can in 15 seconds.",
+  "Make a tongue twister using two players' names.",
+  "Describe your day using exactly five words.",
+  "Pretend you're a cooking show host explaining how to make toast.",
+  "Give the group a 10-second motivational speech about snacks.",
+  "Make the most ridiculous sound effect you can.",
+  "Create a slogan for your friend group.",
+  "Send a GIF or emoji that represents your current energy.",
+  "Invent a dance move and give it a name.",
+  "Say three nice things about the group—no roasting for this one!",
+  "Act like your phone is giving you an award for screen time.",
+  "Make up a fake headline about today's group chat.",
+  "Do your best impression of a sleepy person waking up."
+];
+
+let app, auth, db, currentUser = null, roomCode = null, roomRef = null, roomData = null, roomListener = null;
+const $ = id => document.getElementById(id);
+function status(id, message, kind='') { const el=$(id); el.textContent=message; el.className='status '+kind; }
+function toast(message) { $('toast').textContent=message; $('toast').classList.remove('hidden'); setTimeout(()=> $('toast').classList.add('hidden'), 2800); }
+function cleanName(){ return $('nameInput').value.trim().replace(/[<>]/g,'').slice(0,18); }
+function configReady(){ return firebaseConfig.apiKey.startsWith('AIza') && !firebaseConfig.projectId.startsWith('PASTE_') && firebaseConfig.databaseURL.startsWith('https://'); }
+async function ensureFirebase(){
+  if(!configReady()) throw new Error('Add your Firebase web config in index.html first. Follow README.md.');
+  if(!app){ app=firebase.initializeApp(firebaseConfig); auth=firebase.auth(); db=firebase.database(); }
+  if(!auth.currentUser) await auth.signInAnonymously();
+  currentUser=auth.currentUser;
+}
+function randomCode(){ const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s=''; for(let i=0;i<6;i++) s+=chars[Math.floor(Math.random()*chars.length)]; return s; }
+function makeChallenge(type){
+  const pool = type==='truth' ? TRUTHS : DARES;
+  return {type, text:pool[Math.floor(Math.random()*pool.length)], by:currentUser.uid, at:Date.now()};
+}
+function playerEntries(){ return roomData && roomData.players ? Object.entries(roomData.players) : []; }
+function orderedPlayers(){ return playerEntries().sort((a,b)=>(a[1].joinedAt||0)-(b[1].joinedAt||0)); }
+function isMyTurn(){
+  const players=orderedPlayers(); if(!players.length) return false;
+  const idx=((roomData.turnIndex||0)%players.length+players.length)%players.length;
+  return players[idx][0]===currentUser.uid;
+}
+function myPlayer(){ return roomData?.players?.[currentUser.uid]; }
+function isHost(){ return roomData?.hostUid===currentUser?.uid; }
+async function createRoom(){
+  const name=cleanName(); if(!name){status('setupStatus','Enter your nickname first.','error');return;}
+  try{
+    status('setupStatus','Connecting…'); await ensureFirebase();
+    let code, ref, snap, tries=0;
+    do { code=randomCode(); ref=db.ref('rooms/'+code); snap=await ref.once('value'); tries++; } while(snap.exists()&&tries<8);
+    if(snap.exists()) throw new Error('Could not make a room code. Try again.');
+    const now=Date.now();
+    await ref.set({createdAt:now,hostUid:currentUser.uid,turnIndex:0,round:0,players:{[currentUser.uid]:{name,joinedAt:now,score:0}},currentChallenge:null,updatedAt:now});
+    enterRoom(code);
+  }catch(e){status('setupStatus',e.message||'Could not create room. Check Firebase setup.','error');}
+}
+async function joinRoom(){
+  const name=cleanName(), code=$('codeInput').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(!name){status('setupStatus','Enter your nickname first.','error');return;}
+  if(code.length!==6){status('setupStatus','Room codes have 6 characters.','error');return;}
+  try{
+    status('setupStatus','Joining room…'); await ensureFirebase();
+    const ref=db.ref('rooms/'+code), snap=await ref.once('value');
+    if(!snap.exists()) throw new Error('Room not found. Check the code with your friend.');
+    const data=snap.val();
+    if(data.players && data.players[currentUser.uid]) { enterRoom(code); return; }
+    if(Object.keys(data.players||{}).length>=12) throw new Error('This room is full (12 players max).');
+    await ref.child('players/'+currentUser.uid).set({name,joinedAt:Date.now(),score:0});
+    enterRoom(code);
+  }catch(e){status('setupStatus',e.message||'Could not join room.','error');}
+}
+function enterRoom(code){
+  if(roomListener && roomRef) roomRef.off('value',roomListener);
+  roomCode=code; roomRef=db.ref('rooms/'+code);
+  $('setup').classList.add('hidden'); $('game').classList.remove('hidden'); $('roomCodeText').textContent=code;
+  roomListener=snap=>{ if(!snap.exists()){toast('This room no longer exists.');leaveRoom(false);return;} roomData=snap.val(); renderRoom(); };
+  roomRef.on('value',roomListener,err=>status('roomStatus','Database error: '+err.message,'error'));
+  status('roomStatus','Connected to live room.','ok');
+}
+function renderRoom(){
+  if(!roomData) return;
+  const players=orderedPlayers(), count=players.length;
+  $('playerCount').textContent=count+' player'+(count===1?'':'s');
+  $('playersList').innerHTML='';
+  players.forEach(([uid,p],i)=>{
+    const div=document.createElement('div'); div.className='player';
+    const left=document.createElement('span'); left.textContent=(p.name||'Player')+(uid===currentUser.uid?' (you)':'');
+    const right=document.createElement('span');
+    if(uid===roomData.hostUid){right.textContent='HOST';right.className='host'}
+    else {right.textContent='⭐ '+(p.score||0);right.className='tiny'}
+    div.append(left,right); $('playersList').append(div);
+  });
+  const turnPlayer=players.length ? players[((roomData.turnIndex||0)%players.length+players.length)%players.length] : null;
+  const myTurn=!!turnPlayer && turnPlayer[0]===currentUser.uid;
+  $('turnTitle').textContent=turnPlayer ? (myTurn?'Your turn, '+(turnPlayer[1].name||'friend')+'!':"Waiting for "+(turnPlayer[1].name||'friend')+"'s turn") : 'Waiting for players…';
+  $('turnSub').textContent=count<2?'Invite a friend to begin the chaos.':(myTurn?'Pick Truth or Dare below.':"Everyone sees the same challenge when it's chosen.");
+  const challenge=roomData.currentChallenge;
+  $('challengeBox').classList.toggle('hidden',!challenge);
+  $('chooseBox').classList.toggle('hidden',!!challenge || !myTurn);
+  $('nextBtn').classList.toggle('hidden',!challenge || !myTurn);
+  $('challengeType').textContent=challenge ? (challenge.type==='truth'?'😇 TRUTH':'😈 DARE') : '';
+  $('challengeText').textContent=challenge ? challenge.text : '';
+  $('doneBtn').disabled=!myTurn; $('skipBtn').disabled=!myTurn;
+  $('truthBtn').disabled=!myTurn || count<2; $('dareBtn').disabled=!myTurn || count<2;
+  $('nextBtn').disabled=!myTurn;
+  $('chooseHint').textContent=myTurn?'Choose one. You can skip any prompt that makes you uncomfortable.':'Wait for your turn to choose a challenge.';
+}
+async function choose(type){
+  if(!roomRef||!roomData||!isMyTurn()) return toast("It's not your turn yet!");
+  try{ await roomRef.update({currentChallenge:makeChallenge(type),updatedAt:Date.now()}); status('gameStatus','Challenge sent to everyone!','ok');}
+  catch(e){status('gameStatus','Could not update game: '+e.message,'error');}
+}
+async function finishChallenge(score){
+  if(!roomRef||!roomData||!isMyTurn()) return;
+  try{
+    const updates={currentChallenge:null,updatedAt:Date.now()};
+    if(score && roomData.players?.[currentUser.uid]) updates['players/'+currentUser.uid+'/score']=(roomData.players[currentUser.uid].score||0)+1;
+    await roomRef.update(updates); status('gameStatus',score?'Point earned! Nice one.':'No pressure—challenge skipped.','ok');
+  }catch(e){status('gameStatus','Could not update game: '+e.message,'error');}
+}
+async function nextTurn(){
+  if(!roomRef||!roomData||!isMyTurn()||!roomData.currentChallenge) return;
+  const count=orderedPlayers().length; if(!count) return;
+  try{await roomRef.update({turnIndex:((roomData.turnIndex||0)+1)%count,round:(roomData.round||0)+1,currentChallenge:null,updatedAt:Date.now()});status('gameStatus','Next player up!','ok');}
+  catch(e){status('gameStatus','Could not move turn: '+e.message,'error');}
+}
+async function leaveRoom(removePlayer=true){
+  try{
+    if(roomListener&&roomRef) roomRef.off('value',roomListener);
+    if(removePlayer&&roomRef&&currentUser) await roomRef.child('players/'+currentUser.uid).remove();
+  }catch(e){}
+  roomCode=null;roomRef=null;roomListener=null;roomData=null;
+  $('game').classList.add('hidden');$('setup').classList.remove('hidden');
+  status('setupStatus','You left the room. Create or join another room.','');
+}
+$('showJoinBtn').addEventListener('click',()=> $('joinArea').classList.toggle('hidden'));
+$('createBtn').addEventListener('click',createRoom);
+$('joinBtn').addEventListener('click',joinRoom);
+$('truthBtn').addEventListener('click',()=>choose('truth'));
+$('dareBtn').addEventListener('click',()=>choose('dare'));
+$('doneBtn').addEventListener('click',()=>finishChallenge(true));
+$('skipBtn').addEventListener('click',()=>finishChallenge(false));
+$('nextBtn').addEventListener('click',nextTurn);
+$('leaveBtn').addEventListener('click',()=>leaveRoom(true));
+$('copyBtn').addEventListener('click',async()=>{
+  const invite='Join my FriendZ Chaos Truth or Dare room! Code: '+roomCode;
+  try{await navigator.clipboard.writeText(invite);toast('Invite copied! Send it to your friends.');}
+  catch(e){prompt('Copy this invite and send it to your friends:',invite);}
+});
+$('codeInput').addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6));
+</script>
+</body>
+</html>
